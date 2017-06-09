@@ -1,6 +1,7 @@
 package com.example.jd.vollaydemo;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -36,7 +37,7 @@ import static com.android.volley.VolleyLog.TAG;
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class ItemFragment extends Fragment {
+public class ItemFragment extends Fragment implements RecyclerItemClickListener.OnItemClickListener{
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -95,7 +96,7 @@ public class ItemFragment extends Fragment {
             }
             recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DummyContent.ITEMS, mListener));
         }
-//        recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(MyApp.mycontex,this));
+      recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(),this));
         sendRequest();
         return view;
     }
@@ -122,7 +123,7 @@ public class ItemFragment extends Fragment {
 //                                DummyContent.addItem();
 //                                Toast.makeText(getActivity(),"hi",Toast.LENGTH_SHORT).show();
                                 DummyContent.addItem(new DummyItem(""+(i+1),js.getString("title")+" ",js.getString("content")+" "));
-                                Toast.makeText(getActivity(),""+js.getString("title")+" "+i,Toast.LENGTH_SHORT).show();
+//                                Toast.makeText(getActivity(),""+js.getString("title")+" "+i,Toast.LENGTH_SHORT).show();
 //                                resultsList.add();
 
 
@@ -148,6 +149,7 @@ public class ItemFragment extends Fragment {
 
 
 
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -163,6 +165,21 @@ public class ItemFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+
+    @Override
+    public void onItemClick(View childView, int position) {
+
+//        startActivity(i);
+        Toast.makeText(getActivity(),"Data : "+DummyContent.ITEMS.get(position),Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onItemLongPress(View childView, int position) {
+
+
+        Toast.makeText(getActivity(),"Long Press : "+position,Toast.LENGTH_LONG).show();
     }
 
     /**

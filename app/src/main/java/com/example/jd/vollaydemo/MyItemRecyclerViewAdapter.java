@@ -1,10 +1,12 @@
 package com.example.jd.vollaydemo;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.jd.vollaydemo.ItemFragment.OnListFragmentInteractionListener;
 import com.example.jd.vollaydemo.dummy.DummyContent.DummyItem;
@@ -17,7 +19,7 @@ import java.util.List;
  * TODO: Replace the implementation with code for your data type.
  */
 public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecyclerViewAdapter.ViewHolder> {
-
+    Context context;
     private final List<DummyItem> mValues;
     private final OnListFragmentInteractionListener mListener;
 
@@ -34,7 +36,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
 //        holder.mItem = mValues.get(position);
         holder.mIdView.setText(mValues.get(position).id);
         holder.title.setText(mValues.get(position).title);
@@ -47,14 +49,21 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
                     // Notify the active callbacks interface (the activity, if the
                     // fragment is attached to one) that an item has been selected.
                     mListener.onListFragmentInteraction(holder.mItem);
+//                    Toast.makeText(context,"click"+position,Toast.LENGTH_SHORT).show();
                 }
             }
         });
+
     }
 
     @Override
     public int getItemCount() {
         return mValues.size();
+    }
+    public  void delete(int postion)
+    {
+        mValues.remove(postion);
+        notifyItemRemoved(postion);
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
@@ -71,11 +80,14 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
             mIdView = (TextView) view.findViewById(R.id.id);
             title=(TextView)view.findViewById(R.id.titlef);
             deatils = (TextView) view.findViewById(R.id.details);
+
         }
 
         @Override
         public String toString() {
             return super.toString() + " '" + title.getText() + "'";
         }
+
+
     }
 }
