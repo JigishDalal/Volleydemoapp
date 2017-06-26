@@ -41,6 +41,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         holder.mIdView.setText(mValues.get(position).id);
         holder.title.setText(mValues.get(position).title);
         holder.deatils.setText(mValues.get(position).details);
+        holder.setListeners();
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -66,7 +67,7 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
         notifyItemRemoved(postion);
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
         public final View mView;
         public final TextView mIdView;
         public final TextView deatils;
@@ -88,6 +89,27 @@ public class MyItemRecyclerViewAdapter extends RecyclerView.Adapter<MyItemRecycl
             return super.toString() + " '" + title.getText() + "'";
         }
 
+
+        public void setListeners() {
+            mIdView.setOnClickListener(ViewHolder.this);
+        }
+
+        @Override
+        public void onClick(View view) {
+            switch ( view.getId()){
+                case R.id.id:
+                    Toast.makeText(view.getContext(),"delete"+getAdapterPosition(),Toast.LENGTH_SHORT).show();
+                    removeItem(getAdapterPosition());
+            }
+
+        }
+    }
+
+    private void removeItem(int adapterPosition) {
+
+        mValues.remove(adapterPosition);
+        notifyItemRemoved(adapterPosition);
+        notifyItemRangeChanged(adapterPosition, mValues.size());
 
     }
 }

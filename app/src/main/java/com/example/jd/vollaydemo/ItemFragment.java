@@ -1,7 +1,10 @@
 package com.example.jd.vollaydemo;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.app.VoiceInteractor;
 import android.content.Context;
-import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -14,6 +17,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
+import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -29,15 +33,13 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.android.volley.VolleyLog.TAG;
-
 /**
  * A fragment representing a list of Items.
  * <p/>
  * Activities containing this fragment MUST implement the {@link OnListFragmentInteractionListener}
  * interface.
  */
-public class ItemFragment extends Fragment implements RecyclerItemClickListener.OnItemClickListener{
+public class ItemFragment extends Fragment {
 
     // TODO: Customize parameter argument names
     private static final String ARG_COLUMN_COUNT = "column-count";
@@ -45,12 +47,13 @@ public class ItemFragment extends Fragment implements RecyclerItemClickListener.
     private int mColumnCount = 1;
     RecyclerView recyclerView ;
     RequestQueue mRequestqeue;
+    StringRequest request;
     MyItemRecyclerViewAdapter myadpter;
     String url = "https://api.myjson.com/bins/w86a";
     List<Newsfeeds> resultsList =new ArrayList<>();
     private StringRequest stringRequest;
     private OnListFragmentInteractionListener mListener;
-
+    ProgressDialog progressDialog;
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -81,7 +84,7 @@ public class ItemFragment extends Fragment implements RecyclerItemClickListener.
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_item_list, container, false);
-        RecyclerView recyclerView=null;
+//        RecyclerView recyclerView=null;
         // Set the adapter
         if (view instanceof RecyclerView) {
             Context context = view.getContext();
@@ -96,16 +99,23 @@ public class ItemFragment extends Fragment implements RecyclerItemClickListener.
             }
             recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DummyContent.ITEMS, mListener));
         }
-      recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(),this));
-        sendRequest();
+     // recyclerView.addOnItemTouchListener(new RecyclerItemClickListener(getActivity(),this));
+        progressDialog =new ProgressDialog(getActivity());
+        progressDialog.setTitle("Loading");
+        progressDialog.setMessage("Pleace wait...");
+        progressDialog.setCancelable(false);
+       sendRequest();
+
+
         return view;
     }
 
 
     private void sendRequest(){
-        mRequestqeue= Volley.newRequestQueue(getActivity());
 
-        StringRequest stringRequest = new StringRequest(url,
+        mRequestqeue= Volley.newRequestQueue(getActivity());
+        progressDialog.show();
+        stringRequest = new StringRequest(url,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
@@ -113,6 +123,8 @@ public class ItemFragment extends Fragment implements RecyclerItemClickListener.
                         try {
 
                             JSONArray root=new JSONArray(response);
+
+//                            Toast.makeText(getActivity(),"length"+root.length(),Toast.LENGTH_SHORT).show();
                             for (int i=0;i<root.length();i++)
                             {
                                 JSONObject js=root.getJSONObject(i);
@@ -124,21 +136,24 @@ public class ItemFragment extends Fragment implements RecyclerItemClickListener.
 //                                Toast.makeText(getActivity(),"hi",Toast.LENGTH_SHORT).show();
                                 DummyContent.addItem(new DummyItem(""+(i+1),js.getString("title")+" ",js.getString("content")+" "));
 //                                Toast.makeText(getActivity(),""+js.getString("title")+" "+i,Toast.LENGTH_SHORT).show();
-//                                resultsList.add();
+
 
 
                             }
+                            recyclerView.setAdapter(new MyItemRecyclerViewAdapter(DummyContent.ITEMS, mListener));
 
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+                        progressDialog.dismiss();
 
                     }
                 },
                 new Response.ErrorListener() {
                     @Override
                     public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(getActivity(),"Error"+error.getMessage(),Toast.LENGTH_LONG).show();
+//                        Toast.makeText(getActivity(),"Error",Toast.LENGTH_LONG).show();
+                    progressDialog.dismiss();
                     }
                 });
         //The following lines add the request to the volley queue
@@ -168,19 +183,6 @@ public class ItemFragment extends Fragment implements RecyclerItemClickListener.
     }
 
 
-    @Override
-    public void onItemClick(View childView, int position) {
-
-//        startActivity(i);
-        Toast.makeText(getActivity(),"Data : "+DummyContent.ITEMS.get(position),Toast.LENGTH_LONG).show();
-    }
-
-    @Override
-    public void onItemLongPress(View childView, int position) {
-
-
-        Toast.makeText(getActivity(),"Long Press : "+position,Toast.LENGTH_LONG).show();
-    }
 
     /**
      * This interface must be implemented by activities that contain this
@@ -195,5 +197,88 @@ public class ItemFragment extends Fragment implements RecyclerItemClickListener.
     public interface OnListFragmentInteractionListener {
         // TODO: Update argument type and name
         void onListFragmentInteraction(DummyItem item);
+    }
+    public class Mytask extends AsyncTask<Void,Void,Void>{
+        ProgressDialog pr;
+        Activity context;
+
+        public Mytask(Activity context) {
+            this.context = context;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pr=new ProgressDialog(getActivity());
+            pr.setTitle("Loading...");
+            pr.setProgress(0);
+            pr.setMax(10);
+            pr.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            pr.setMessage("Pleace wait.....");
+            pr.show();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            pr.dismiss();
+
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+
+        @Override
+        protected Void doInBackground(Void... param) {
+            final int[] total = {0};
+            mRequestqeue=Volley.newRequestQueue(getActivity());
+            request=new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    Log.i("Response",response);
+                    try {
+
+                        JSONArray root=new JSONArray(response);
+                        total[0] =Integer.parseInt(String.valueOf(root.length()));
+//                            Toast.makeText(getActivity(),"length"+root.length(),Toast.LENGTH_SHORT).show();
+                        for (int i=0;i<root.length();i++)
+                        {
+                            JSONObject js=root.getJSONObject(i);
+//                                Newsfeeds news=new Newsfeeds(js.getString("title"),js.getString("content"));
+//                                ArrayAdapter adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,""+i);
+//                                lv.setAdapter(adapter);
+//                                DummyContent.addItem(new DummyItem(" "+i,js.getString("title")+"",js.getString("content")+""));
+//                                DummyContent.addItem();
+//                                Toast.makeText(getActivity(),"hi",Toast.LENGTH_SHORT).show();
+                            DummyContent.addItem(new DummyItem(""+(i+1),js.getString("title")+" ",js.getString("content")+" "));
+//                                Toast.makeText(getActivity(),""+js.getString("title")+" "+i,Toast.LENGTH_SHORT).show();
+//                                resultsList.add();
+
+
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+
+
+                }
+            });
+
+            mRequestqeue.add(stringRequest);
+
+//            return total[0] ;
+            return null;
+        }
+
+
+
     }
 }

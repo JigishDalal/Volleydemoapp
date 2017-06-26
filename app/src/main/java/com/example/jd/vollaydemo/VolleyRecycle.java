@@ -98,4 +98,5 @@ public class VolleyRecycle extends AppCompatActivity implements ItemFragment.OnL
     public void onListFragmentInteraction(DummyContent.DummyItem item) {
 
     }
+
 }
